@@ -6,6 +6,7 @@ var io = require('socket.io')(server, { origins: '*:*'});
 var port = process.env.PORT || 3000;
 
 // Add headers
+/*
 app.use(function (req, res, next) {
     // Website you wish to allow to connect
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -19,15 +20,16 @@ app.use(function (req, res, next) {
     // Pass to next layer of middleware
     next();
 });
+*/
 
 server.listen(port, function() {
     console.log('Gulp is starting my app on PORT: ' + port)
 });
-
+/*
 app.get('/', function (req, res) {
     res.json("welcome");
 });
-
+*/
 io.on('connection', (socket) => {
     console.log('Client connected');
     socket.on('disconnect', () => console.log('Client disconnected'));
