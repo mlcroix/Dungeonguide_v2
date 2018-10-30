@@ -21,9 +21,9 @@ app.use(function (req, res, next) {
 });
 
 io.origins((origin, callback) => {
-    if (origin !== '*:*') {
-      return callback('origin not allowed', false);
-    }
+    //if (origin !== 'https://foo.example.com') {
+    //  return callback('origin not allowed', false);
+    //}
     callback(null, true);
 });
 
