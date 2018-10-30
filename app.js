@@ -1,11 +1,12 @@
 var app = require('express')();
 var server = require('http').Server(app);
-var io = require('socket.io')(server);
+//var io = require('socket.io')(server);
+var io = require('socket.io')(server, { origins: '*:*'});
 
 var port = process.env.PORT || 3000;
 
 // Add headers
-io.use(function (req, res, next) {
+app.use(function (req, res, next) {
     // Website you wish to allow to connect
     res.setHeader('Access-Control-Allow-Origin', '*');
     // Request methods you wish to allow
