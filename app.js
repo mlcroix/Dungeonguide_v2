@@ -21,9 +21,10 @@ app.use(function (req, res, next) {
 });
 
 io.origins((origin, callback) => {
-    //if (origin !== 'https://foo.example.com') {
-    //  return callback('origin not allowed', false);
-    //}
+    console.log('cors');
+    if (origin !== 'http://localhost:4200') {
+      return callback('origin not allowed', false);
+    }
     callback(null, true);
 });
 
