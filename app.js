@@ -1,12 +1,11 @@
 var app = require('express')();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
-io.origins('*:*');
 
 var port = process.env.PORT || 3000;
 
 // Add headers
-/*
+
 app.use(function (req, res, next) {
     // Website you wish to allow to connect
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -20,16 +19,22 @@ app.use(function (req, res, next) {
     // Pass to next layer of middleware
     next();
 });
-*/
+
+io.origins((origin, callback) => {
+    if (origin !== '*:*') {
+      return callback('origin not allowed', false);
+    }
+    callback(null, true);
+});
 
 server.listen(port, function() {
     console.log('Gulp is starting my app on PORT: ' + port)
 });
-/*
+
 app.get('/', function (req, res) {
     res.json("welcome");
 });
-*/
+
 io.on('connection', (socket) => {
     console.log('Client connected');
     socket.on('disconnect', () => console.log('Client disconnected'));
