@@ -1,12 +1,12 @@
 var app = require('express')();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
-
+io.origins(['*:*']);
 var port = process.env.PORT || 3000;
 
 // Add headers
-
 app.use(function (req, res, next) {
+    console.log("cors headers expresss");
     // Website you wish to allow to connect
     res.setHeader('Access-Control-Allow-Origin', '*');
     // Request methods you wish to allow
@@ -18,14 +18,6 @@ app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Credentials', true);
     // Pass to next layer of middleware
     next();
-});
-
-io.origins((origin, callback) => {
-    console.log('cors');
-    if (origin !== 'http://localhost:4200') {
-      return callback('origin not allowed', false);
-    }
-    callback(null, true);
 });
 
 server.listen(port, function() {
