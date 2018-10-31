@@ -5,11 +5,16 @@ io.origins(['*:*']);
 var port = process.env.PORT || 3000;
 var db = require('./db');
 
+var indexRouter = require('./routes/index');
+var playersRouter = require('./routes/players');
+var campaignsRouter = require('./routes/campaigns');
+var sessionsRouter = require('./routes/sessions');
+var notesRouter = require('./routes/notes');
+
 db.connect();
 
 // Add headers
 app.use(function (req, res, next) {
-    console.log("cors headers expresss");
     // Website you wish to allow to connect
     res.setHeader('Access-Control-Allow-Origin', '*');
     // Request methods you wish to allow
@@ -24,12 +29,21 @@ app.use(function (req, res, next) {
 });
 
 server.listen(port, function() {
-    console.log('Gulp is starting my app on PORT: ' + port)
+    console.log('Starting App on port: ' + port)
 });
+
+app.use('/', indexRouter);
+app.use('/players', playersRouter);
+app.use('/campaigns', campaignsRouter);
+app.use('/sessions', sessionsRouter);
+app.use('/notes', notesRouter);
+
+/*
 
 app.get('/', function (req, res) {
     res.json("welcome");
 });
+*/
 
 io.on('connection', (socket) => {
     console.log('Client connected');
