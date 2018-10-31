@@ -3,6 +3,9 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 io.origins(['*:*']);
 var port = process.env.PORT || 3000;
+var db = require('./db');
+
+db.connect();
 
 // Add headers
 app.use(function (req, res, next) {
@@ -31,4 +34,13 @@ app.get('/', function (req, res) {
 io.on('connection', (socket) => {
     console.log('Client connected');
     socket.on('disconnect', () => console.log('Client disconnected'));
-  });
+});
+
+var nsp = io.of('/meep');
+nsp.on('connection', function(socket) {
+   console.log('someone connected meep');
+   socket.on('meep added',function(){
+        io.emit('meep');
+   });
+   socket.on('disconnect', () => console.log('Client stopped meeping'));
+});
