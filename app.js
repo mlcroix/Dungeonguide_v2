@@ -4,6 +4,7 @@ var io = require('socket.io')(server);
 io.origins(['*:*']);
 var port = process.env.PORT || 3000;
 var db = require('./db');
+var ObjectId = require('mongodb').ObjectID;
 
 var indexRouter = require('./routes/index');
 var playersRouter = require('./routes/players');
@@ -28,33 +29,27 @@ app.use(function (req, res, next) {
     next();
 });
 
-server.listen(port, function() {
-    console.log('Starting App on port: ' + port)
-});
-
 app.use('/', indexRouter);
 app.use('/players', playersRouter);
 app.use('/campaigns', campaignsRouter);
 app.use('/sessions', sessionsRouter);
 app.use('/notes', notesRouter);
 
-/*
-
-app.get('/', function (req, res) {
-    res.json("welcome");
-});
-*/
-
-io.on('connection', (socket) => {
-    console.log('Client connected');
-    socket.on('disconnect', () => console.log('Client disconnected'));
+server.listen(port, function() {
+    console.log('Starting App on port: ' + port)
 });
 
-var nsp = io.of('/meep');
+var nsp = io.of('/notes');
 nsp.on('connection', function(socket) {
-   console.log('someone connected meep');
-   socket.on('meep added',function(){
-        io.emit('meep');
-   });
-   socket.on('disconnect', () => console.log('Client stopped meeping'));
+    var database = db.get();
+    console.log("someone connected to notes");
+    socket.on('get-notes', function(campaignId, playerId) {
+        var query = { campaignId: new ObjectId(campaignId), playerId : new ObjectId(playerId) };
+        database.collection("notes").find(query).toArray(function(err, result) {
+            if (err) throw err;
+            console.log(result);
+            console.log('getting notes for ' + playerId);
+            socket.emit('myNotes', result);
+        });
+    });
 });
