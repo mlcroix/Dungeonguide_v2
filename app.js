@@ -6,6 +6,10 @@ var port = process.env.PORT || 3000;
 var db = require('./db');
 var ObjectId = require('mongodb').ObjectID;
 
+var bodyParser = require('body-parser');
+app.use(bodyParser.json());
+
+
 var indexRouter = require('./routes/index');
 var playersRouter = require('./routes/players');
 var campaignsRouter = require('./routes/campaigns');
@@ -42,13 +46,10 @@ server.listen(port, function() {
 var nsp = io.of('/notes');
 nsp.on('connection', function(socket) {
     var database = db.get();
-    console.log("someone connected to notes");
     socket.on('get-notes', function(campaignId, playerId) {
-        var query = { campaignId: new ObjectId(campaignId), playerId : new ObjectId(playerId) };
+        var query = { $and: [{campaignId: new ObjectId(campaignId)}, {playerId : new ObjectId(playerId) }] };
         database.collection("notes").find(query).toArray(function(err, result) {
             if (err) throw err;
-            console.log(result);
-            console.log('getting notes for ' + playerId);
             socket.emit('myNotes', result);
         });
     });

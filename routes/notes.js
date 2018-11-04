@@ -77,20 +77,16 @@ router.post('/update', function(req, res) {
 
 router.post('/create', function(req, res) {
     var database = db.get();
-    var campaignId = post.campaignId;
-    var playerId = post.playerId;
-    console.log("creating note for: " + playerId);
-    console.log("campaign: " + campaignId);
+    var post = req.body;
     var note = {
         _id : new ObjectId(),
-        playerId : playerId,
+        playerId : post.playerId,
         _campaignId : post.campaignId,
         name : 'New note',
         date  :new Date(),
         sharedPlayers : [],
         text : "edit me!"
     }
-
     database.collection("notes").insertOne(note, function(err, result) {
         if (err) throw err;
         res.json(note);
