@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+var dateFormat = require('dateformat');
 
 var MongoClient = require('mongodb').MongoClient;
 var ObjectId = require('mongodb').ObjectID;
@@ -78,12 +79,14 @@ router.post('/update', function(req, res) {
 router.post('/create', function(req, res) {
     var database = db.get();
     var post = req.body;
+    var date = new Date();
+
     var note = {
         _id : new ObjectId(),
-        playerId : post.playerId,
-        _campaignId : post.campaignId,
+        playerId : new ObjectId(post.playerId),
+        campaignId : new ObjectId(post.campaignId),
         name : 'New note',
-        date  :new Date(),
+        date  : dateFormat(date, "dd-mm-yyyy"),
         sharedPlayers : [],
         text : "edit me!"
     }

@@ -53,4 +53,23 @@ nsp.on('connection', function(socket) {
             socket.emit('myNotes', result);
         });
     });
+
+    socket.on('remove-note', function(note) {
+        var database = db.get();
+        var query = { "_id": ObjectId(note._id) };
+        database.collection("notes").remove(query, function(err, result) {
+            var response;
+            if (err) {
+                response = {
+                    message : err,
+                    deleted : false
+                }
+            } else {
+                response = {
+                    message : "succes",
+                    deleted : true
+                }
+            }
+        });
+    });
 });
