@@ -58,7 +58,7 @@ router.get('/:campaignId', function(req, res) {
 router.post('/update', function(req, res) {
     var database = db.get();
     var query = { "_id": ObjectId(req.body._id) };
-    var newValues = { $set: {name: req.body.name, text: req.body.text } };
+    var newValues = { $set: {"name": req.body.name, "text": req.body.text}};
     database.collection("notes").updateOne(query, newValues, function(err, result) {
         var response;
         if (err) {
