@@ -1,7 +1,9 @@
 var express = require('express');
 var router = express.Router();
+var encryption = require('../encryption');
 
 var MongoClient = require('mongodb').MongoClient;
+var ObjectId = require('mongodb').ObjectID;
 var db = require('../db');
 
 router.get('/', function(req, res, next) {
@@ -30,9 +32,43 @@ router.post('/login', function(req, res) {
     var query = { username: username };
     try {
         var currUser = database.collection("players").find(query).toArray(function(err, result) {
-            if (result.length != 0 && result[0].username == username && result[0].password == post.password){
+            if (result.length != 0 && result[0].username == username && encryption.decrypt(result[0].password) == post.password){
                 delete result[0].password;
                 res.json(result[0])
+            }
+            else {
+                res.status(404);
+                res.json({message: "Not Found"});
+            }
+        });
+    }
+    catch(err) {
+        console.log(err);
+        res.status(404);
+        res.json({message: "Not Found"});
+    }
+});
+
+router.post('/signup', function(req, res) {
+    var database = db.get();
+    var post = req.body;
+    var query = { $or: [{username: post.username}, {email : post.email }] };
+    try {
+        var currUser = database.collection("players").find(query).toArray(function(err, result) {
+            if (result.length == 0){
+
+                var player = {
+                    _id : new ObjectId(),
+                    firstname : post.firstname,
+                    surname : post.surname,
+                    email : post.email,
+                    username : post.username,
+                    password : encryption.encrypt(post.password)
+                }
+                database.collection("players").insertOne(player, function(err, result) {
+                    if (err) throw err;
+                    res.json(player);
+                });
             }
             else {
                 res.status(404);
