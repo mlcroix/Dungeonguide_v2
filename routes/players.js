@@ -83,6 +83,39 @@ router.post('/signup', function(req, res) {
     }
 });
 
+router.post('/validate', function(req, res) {
+    var database = db.get();
+    var post = req.body;
+    var query = { $or: [{username: post.username}, {email : post.email }] };
+    try {
+        var currUser = database.collection("players").find(query).toArray(function(err, result) {
+            if (result.length == 0){
+                res.status(200);
+                res.json({message: "succes"});
+            }
+            else {
+                if (result[0].username == post.username) {
+                    res.status(201);
+                    res.json({message: "user with the same name already exists"});
+                }
+                else if (result[0].email == post.email) {
+                    res.status(201);
+                    res.json({message: "user with the same email adres already exists"});
+                }
+                else {
+                    res.status(201);
+                    res.json({message: "user already exists"});
+                }
+            }
+        });
+    }
+    catch(err) {
+        console.log(err);
+        res.status(404);
+        res.json({message: "Not Found"});
+    }
+});
+
 router.post('/remove', function(req, res) {
     var database = db.get();
     var query = { "_id": ObjectId(req.body._id) };
