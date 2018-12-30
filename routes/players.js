@@ -71,8 +71,18 @@ router.post('/signup', function(req, res) {
                 });
             }
             else {
-                res.status(404);
-                res.json({message: "Not Found"});
+                if (result[0].username == post.username) {
+                    res.status(201);
+                    res.json({message: "user with the same name already exists"});
+                }
+                else if (result[0].email == post.email) {
+                    res.status(201);
+                    res.json({message: "user with the same email adres already exists"});
+                }
+                else {
+                    res.status(201);
+                    res.json({message: "user already exists"});
+                }
             }
         });
     }

@@ -115,4 +115,25 @@ router.post('/update', function(req, res) {
     });
 });
 
+router.post('/changename', function(req, res) {
+    var database = db.get();
+    var query = { "_id": ObjectId(req.body.campaignId) };
+    var newValues = { $set: {name: req.body.name} };
+    database.collection("campaigns").updateOne(query, newValues, function(err, result) {
+        var response;
+        if (err) {
+            response = {
+                message : "ERROR: failed to change the campaign name.",
+                updated : false
+            }
+        } else {
+            response = {
+                message : "successfully changed the campaign name.",
+                updated : true
+            }
+        }
+        res.json(response);
+    });
+});
+
 module.exports = router;
