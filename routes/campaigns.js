@@ -1,5 +1,3 @@
-//import { Schema, Mongoose } from 'mongoose';
-
 var express = require('express');
 var router = express.Router();
 
@@ -13,7 +11,8 @@ var campaignSchema = Mongoose.Schema({
     name : String,
     date : Date,
     dungeonMaster : { type: ObjectId, ref: 'players' },
-    players : [{type:Mongoose.Schema.Types.ObjectId, ref: 'players'}]
+    players : [{type:Mongoose.Schema.Types.ObjectId, ref: 'players'}],
+    pendingPlayers : [{type:Mongoose.Schema.Types.ObjectId, ref: 'players'}]
 });
 
 var playerSchema = Mongoose.Schema({
@@ -31,7 +30,7 @@ var players = Mongoose.model('players', playerSchema);
 
 router.get('/', function(req, res, next) {
     var database = db.get();
-    campaign.find({}).populate('dungeonMaster', '-password').populate('players', '-password').exec(function (err, result) {
+    campaign.find({}).populate('dungeonMaster', '-password').populate('players', '-password').populate('pendingPlayers', '-password').exec(function (err, result) {
         if (err) throw err;
         res.json(result);
     });
@@ -40,7 +39,7 @@ router.get('/', function(req, res, next) {
 router.get('/id/:id', function(req, res) {
     var database = db.get();
     var query = { _id: new ObjectId(req.params.id) };
-    campaign.find(query).populate('dungeonMaster', '-password').populate('players', '-password').exec(function (err, result) {
+    campaign.find(query).populate('dungeonMaster', '-password').populate('players', '-password').populate('pendingPlayers', '-password').exec(function (err, result) {
         if (err) throw err;
         res.json(result);
     });
@@ -48,15 +47,15 @@ router.get('/id/:id', function(req, res) {
 
 router.get('/playerid/:id', function(req, res) {
     var database = db.get();
-    var query = { $or: [{players: new ObjectId(req.params.id)}, {dungeonMaster: new ObjectId(req.params.id)}] };
+    var query = { $or: [{players: new ObjectId(req.params.id)}, {dungeonMaster: new ObjectId(req.params.id)}, {pendingPlayers: new ObjectId(req.params.id)}] };
     var result = [];
-    campaign.find(query).populate('dungeonMaster', '-password').populate('players', '-password').exec(function (err, result) {
+    campaign.find(query).populate('dungeonMaster', '-password').populate('players', '-password').populate('pendingPlayers', '-password').exec(function (err, result) {
         if (err) throw err;
         res.json(result);
     });
   });
 
-  router.get('/:playerid/create', function(req, res) {
+router.get('/:playerid/create', function(req, res) {
     var database = db.get();
 
     var campaign = {
@@ -65,6 +64,7 @@ router.get('/playerid/:id', function(req, res) {
         date  : new Date(),
         dungeonMaster : ObjectId(req.params.playerid),
         players : [],
+        pendingPlayers : [],
     }
     database.collection("campaigns").insertOne(campaign, function(err, result) {
         if (err) throw err;
@@ -72,7 +72,7 @@ router.get('/playerid/:id', function(req, res) {
     });
 });
 
-  router.post('/remove', function(req, res) {
+router.post('/remove', function(req, res) {
     var database = db.get();
     var query = { "_id": ObjectId(req.body.campaignId) };
 
@@ -81,14 +81,12 @@ router.get('/playerid/:id', function(req, res) {
             if (result[0].dungeonMaster == req.body.userId) {
                 database.collection("campaigns").remove(query, function(err, result) {
                     if (err) {
-                        console.log("err");
                         response = {
                             message : err.message,
                             deleted : false
                         }
                         res.json(response);
                     } else {
-                        console.log("succes");
                         response = {
                             message : "succes",
                             deleted : true
@@ -116,8 +114,20 @@ router.get('/playerid/:id', function(req, res) {
 
 router.post('/update', function(req, res) {
     var database = db.get();
-    var query = { "_id": ObjectId(req.body._id) };
-    var newValues = { $set: {name: req.body.name, dungeonMaster: req.body.dungeonMaster, players: req.body.players } };
+    var campaign = req.body.campaign;
+    var query = { "_id": ObjectId(campaign._id) };
+    var playerIds = [];
+    var pendingPlayerIds = [];
+
+    campaign.players.forEach(player => {
+        playerIds.push(ObjectId(player._id));
+    });
+
+    campaign.pendingPlayers.forEach(player => {
+        pendingPlayerIds.push(ObjectId(player._id));
+    });
+
+    var newValues = { $set: {name: campaign.name, dungeonMaster: ObjectId(campaign.dungeonMaster._id), players: playerIds, pendingPlayers: pendingPlayerIds } };
     database.collection("campaigns").updateOne(query, newValues, function(err, result) {
         var response;
         if (err) {

@@ -10,7 +10,6 @@ router.get('/', function(req, res, next) {
     var database = db.get();
     database.collection("players").find({}).toArray(function(err, result) {
         if (err) throw err;
-        console.log(result);
         res.json(result);
       });
 });
@@ -20,7 +19,6 @@ router.get('/username/:username', function(req, res) {
     var query = { username: req.params.username };
     database.collection("players").find(query).toArray(function(err, result) {
         if (err) throw err;
-        console.log(result);
         res.json(result);
     });
 });
@@ -43,7 +41,6 @@ router.post('/login', function(req, res) {
         });
     }
     catch(err) {
-        console.log(err);
         res.status(404);
         res.json({message: "Not Found"});
     }
@@ -87,7 +84,6 @@ router.post('/signup', function(req, res) {
         });
     }
     catch(err) {
-        console.log(err);
         res.status(404);
         res.json({message: "Not Found"});
     }
@@ -120,7 +116,6 @@ router.post('/validate', function(req, res) {
         });
     }
     catch(err) {
-        console.log(err);
         res.status(404);
         res.json({message: "Not Found"});
     }
