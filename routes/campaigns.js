@@ -1,15 +1,38 @@
+//import { Schema, Mongoose } from 'mongoose';
+
 var express = require('express');
 var router = express.Router();
 
+var Mongoose = require('mongoose');
 var MongoClient = require('mongodb').MongoClient;
 var ObjectId = require('mongodb').ObjectID;
 var db = require('../db');
 
+var campaignSchema = Mongoose.Schema({
+    _id : ObjectId,
+    name : String,
+    date : Date,
+    dungeonMaster : { type: ObjectId, ref: 'players' },
+    players : [{type:Mongoose.Schema.Types.ObjectId, ref: 'players'}]
+});
+
+var playerSchema = Mongoose.Schema({
+    _id : ObjectId,
+    firstname : String,
+    surname : String,
+    email : String,
+    username : String,
+    password : String
+});
+
+var campaign = Mongoose.model('campaigns', campaignSchema);
+var players = Mongoose.model('players', playerSchema);
+
+
 router.get('/', function(req, res, next) {
     var database = db.get();
-    database.collection("campaigns").find({}).toArray(function(err, result) {
+    campaign.find({}).populate('dungeonMaster', '-password').populate('players', '-password').exec(function (err, result) {
         if (err) throw err;
-        console.log(result);
         res.json(result);
     });
 });
@@ -17,9 +40,8 @@ router.get('/', function(req, res, next) {
 router.get('/id/:id', function(req, res) {
     var database = db.get();
     var query = { _id: new ObjectId(req.params.id) };
-    database.collection("campaigns").find(query).toArray(function(err, result) {
+    campaign.find(query).populate('dungeonMaster', '-password').populate('players', '-password').exec(function (err, result) {
         if (err) throw err;
-        console.log(result);
         res.json(result);
     });
 });
@@ -28,12 +50,10 @@ router.get('/playerid/:id', function(req, res) {
     var database = db.get();
     var query = { $or: [{players: new ObjectId(req.params.id)}, {dungeonMaster: new ObjectId(req.params.id)}] };
     var result = [];
-
-    database.collection("campaigns").find(query).toArray(function(err, result) {
+    campaign.find(query).populate('dungeonMaster', '-password').populate('players', '-password').exec(function (err, result) {
         if (err) throw err;
         res.json(result);
     });
-
   });
 
   router.get('/:playerid/create', function(req, res) {
