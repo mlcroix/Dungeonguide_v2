@@ -16,7 +16,8 @@ router.get('/', function(req, res, next) {
 
 router.get('/username/:username', function(req, res) {
     var database = db.get();
-    var query = { username: req.params.username };
+    console.log(req.params.username.toLowerCase());
+    var query = { lowCaseUsername: req.params.username.toLowerCase() };
     database.collection("players").find(query).toArray(function(err, result) {
         if (err) throw err;
         res.json(result);
@@ -25,17 +26,17 @@ router.get('/username/:username', function(req, res) {
 
 router.post('/login', function(req, res) {
     var database = db.get();
-    var post = req.body;
-    var username = post.username;
-    var query = { username: username };
+    var query = { $and: [{lowCaseUsername: req.body.username.toLowerCase()}, {password: encryption.encrypt(req.body.password)}] }
     try {
         var currUser = database.collection("players").find(query).toArray(function(err, result) {
-            if (result.length != 0 && result[0].username == username && encryption.decrypt(result[0].password) == post.password){
+            if (result.length != 0){
+                console.log("login");
                 delete result[0].password;
                 res.json(result[0])
             }
             else {
-                res.status(404);
+                console.log("incorrect");
+                res.status(201);
                 res.json({message: "Not Found"});
             }
         });
@@ -49,17 +50,17 @@ router.post('/login', function(req, res) {
 router.post('/signup', function(req, res) {
     var database = db.get();
     var post = req.body;
-    var query = { $or: [{username: post.username}, {email : post.email }] };
+    var query = { $or: [{lowCaseUsername: post.username.toLowerCase()}, {email : post.email.toLowerCase() }] };
     try {
         var currUser = database.collection("players").find(query).toArray(function(err, result) {
             if (result.length == 0){
-
                 var player = {
                     _id : new ObjectId(),
                     firstname : post.firstname,
                     surname : post.surname,
                     email : post.email,
                     username : post.username,
+                    lowCaseUsername : post.username.toLowerCase(),
                     password : encryption.encrypt(post.password)
                 }
                 database.collection("players").insertOne(player, function(err, result) {
@@ -92,7 +93,7 @@ router.post('/signup', function(req, res) {
 router.post('/validate', function(req, res) {
     var database = db.get();
     var post = req.body;
-    var query = { $or: [{username: post.username}, {email : post.email }] };
+    var query = { $or: [{lowCaseUsername: post.username.toLowerCase()}, {email : post.email.toLowerCase() }] };
     try {
         var currUser = database.collection("players").find(query).toArray(function(err, result) {
             if (result.length == 0){
