@@ -74,38 +74,18 @@ router.get('/:playerid/create', function(req, res) {
 
 router.post('/remove', function(req, res) {
     var database = db.get();
-    var query = { "_id": ObjectId(req.body.campaignId) };
-
-    database.collection("campaigns").find(query).toArray(function(err, result) {
-        if(result != null && result.length > 0) {
-            if (result[0].dungeonMaster == req.body.userId) {
-                database.collection("campaigns").remove(query, function(err, result) {
-                    if (err) {
-                        response = {
-                            message : err.message,
-                            deleted : false
-                        }
-                        res.json(response);
-                    } else {
-                        response = {
-                            message : "succes",
-                            deleted : true
-                        }
-                        res.json(response);
-                    }
-                });
-            } else {
-                response = {
-                    message : "ERROR: NOT DM!",
-                    deleted : false
-                }
-                res.json(response);
-            }
-        }
-        else {
+    var query = { $and: [{_id: new ObjectId(req.body.campaignId)}, {dungeonMaster: new ObjectId(req.body.userId)}] };
+    database.collection("campaigns").deleteOne(query, function(err, result) {
+        if (err) {
             response = {
-                message : "no campaign found",
+                message : err.message,
                 deleted : false
+            }
+            res.json(response);
+        } else {
+            response = {
+                message : "succes",
+                deleted : true
             }
             res.json(response);
         }
